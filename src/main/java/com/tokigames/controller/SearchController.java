@@ -47,12 +47,14 @@ public class SearchController {
 		List<Flight> allFlights = new LinkedList<>();
 		RestTemplate restTemplate = new RestTemplate();
 
+		// Search for cheap flights
 		if(StringUtils.isEmpty(provider) || "cheap".equalsIgnoreCase(provider)){
 			List<Cheap> cheap = Arrays.asList(restTemplate.getForObject(CHEAP_URL, Cheap[].class));
 			List<Flight> cheapFlight = cheap.stream().map(p -> FlightMapper.fromCheap(p)).collect(Collectors.toList());
 			allFlights.addAll(cheapFlight);
 		}
 
+		// Search for business flights
 		if(StringUtils.isEmpty(provider) || "business".equalsIgnoreCase(provider)){
 			List<Business> business = Arrays.asList(restTemplate.getForObject(BUSINESS_URL, Business[].class));
 			List<Flight> businessFlight = business.stream().map(p -> FlightMapper.fromBusiness(p))
@@ -62,17 +64,21 @@ public class SearchController {
 		
 		List<Flight> resultFlights = allFlights; 
 		
+		// Filter by departure
 		if(!StringUtils.isEmpty(departure)) {
 			resultFlights = resultFlights.stream()
 	                .filter(flight -> departure.equalsIgnoreCase(flight.getDeparture()))
 	                .collect(Collectors.toList()); 
 		}
+
+		// Filter by arrival
 		if(!StringUtils.isEmpty(arrival)) {
 			resultFlights = resultFlights.stream()
 	                .filter(flight -> arrival.equalsIgnoreCase(flight.getArrival()))
 	                .collect(Collectors.toList()); 
 		}
 
+		// Sorting
 		switch(sortBy) {
 			case "departure": resultFlights.sort(Comparator.comparing(Flight::getDeparture)); break;
 			case "arrival": resultFlights.sort(Comparator.comparing(Flight::getArrival)); break;
@@ -80,10 +86,12 @@ public class SearchController {
 			default: resultFlights.sort(Comparator.comparing(Flight::getDepartureTime)); break;
 		}
 		
+		// Paging
 		if(page != null && page > 0 && size != null && size > 0) {
 			int fromIndex = (page - 1) * size;
 			int toIndex = fromIndex + size;
 			
+			// to avoid index out of bounds exception
 			if(fromIndex < 0) fromIndex = 0;
 			if(toIndex < 0) toIndex = 1;
 
