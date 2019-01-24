@@ -1,11 +1,8 @@
 package com.tokigames.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
  * Created by loctran on 21/01/2019.
  */
-@JsonIgnoreProperties(value = { "departureTime", "arrivalTime" })
 public class Flight {
 	private String id;
 	private String provider;
